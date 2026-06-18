@@ -1,13 +1,90 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROJETE3102</title>
+    <title>ARGOS</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1 id="titulo">PROJETE3102</h1>
-    <h2>teste</h2>
+
+    <div id="login-page">
+        <div class="login-box">
+            <h1 id="titulo">Configuração de Acesso</h1>
+
+            <input
+                type="text"
+                id="username"
+                placeholder="Usuário"
+            >
+
+            <input
+                type="password"
+                id="password"
+                placeholder="Senha"
+            >
+
+            <button onclick="login()">
+                Entrar
+            </button>
+        </div>
+    </div>
+
+    <div id="map-page" style="display:none;">
+
+        <div class="navbar">
+
+            <button class="tab active"
+                    onclick="openTab('map')">
+                MAPA
+            </button>
+
+            <button class="tab"
+                    onclick="openTab('alertas')">
+                Alertas
+            </button>
+
+            <button class="tab"
+                    onclick="openTab('historico')">
+                Histórico
+            </button>
+
+            <button class="tab"
+                    onclick="openTab('diagnostico')">
+                Diagnóstico de Rede
+            </button>
+
+            <button class="tab"
+                    onclick="openTab('relatorios')">
+                Relatórios
+            </button>
+
+        </div>
+
+        <div id="map" class="content active-content">
+            <h1>Mapa</h1>
+        </div>
+
+        <div id="alertas" class="content">
+            <h1>Alertas</h1>
+        </div>
+
+        <div id="historico" class="content">
+            <h1>Histórico</h1>
+        </div>
+
+        <div id="diagnostico" class="content">
+            <h1>Diagnóstico de Rede</h1>
+        </div>
+
+        <div id="relatorios" class="content">
+            <h1>Relatórios</h1>
+        </div>
+
+    </div>
+
+    <script src="estrutura.js"></script>
+
 </body>
 </html>

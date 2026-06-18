@@ -1,3 +1,87 @@
-.titulo{
-    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #111827;
+    color: white;
+}
+
+#login-page {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-box {
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 30px;
+    background: #1f2937;
+    border-radius: 12px;
+}
+
+.login-box h1 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.login-box input {
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+}
+
+.login-box button {
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#map-page {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+}
+
+.navbar{
+    display:flex;
+    background:#1f2937;
+    border-bottom:1px solid #374151;
+}
+
+.tab{
+    background:none;
+    border:none;
+    color:white;
+    padding:15px 25px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+.tab:hover{
+    background:#374151;
+}
+
+.tab.active{
+    border-bottom:3px solid #3b82f6;
+}
+
+.content{
+    display:none;
+    padding:30px;
+}
+
+.active-content{
+    display:block;
 }
