@@ -13,6 +13,10 @@ function login() {
         alert("Usuário ou senha incorretos."); 
 
     }
+
+    document.getElementById("map-page").style.display = "block";
+    iniciarMapa();
+    setTimeout(() => {mapa.invalidateSize();}, 100);
 }
 
 function openTab(tabId){
@@ -96,4 +100,17 @@ function salvarRelatorio(){
     lista.appendChild(card);
     limparFormulario();
     fecharRelatorio();
+}
+
+let mapa;
+
+function iniciarMapa(){
+
+    if(mapa) return;
+
+    mapa = L.map('mapa-regiao').setView([-22.3, -45.9], 8); // Inicializa o mapa com a posição central e o nível de zoom.
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(mapa);
+    
+    L.marker([-22.2473, -45.731]).addTo(mapa).bindPopup("Estação ARGOS-001");
 }

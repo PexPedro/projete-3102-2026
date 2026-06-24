@@ -4,6 +4,7 @@
     <meta charset="UTF-8"> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <title>ARGOS</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -61,28 +62,28 @@
 
         </div>
 
-        <div id="map" class="content active-content"> 
+        <div id="map" class="content active-content">
 
-            <h1>Mapa</h1>
+            <div id="mapa-regiao"></div>
 
-                <div class="legend-box"> 
+                <div class="legend-box">
 
                     <h3>Legenda</h3>
 
-                        <div class="legend-item"> 
-                            <span class="legend-icon station"></span> 
-                            <span>Estação</span> 
-                        </div>
+                    <div class="legend-item">
+                        <span class="legend-icon station"></span>
+                        <span>Estação</span>
+                    </div>
 
-                        <div class="legend-item">
-                            <span class="legend-icon condition"></span>
-                            <span>Condição</span>
-                        </div>
+                    <div class="legend-item">
+                        <span class="legend-icon condition"></span>
+                        <span>Condição</span>
+                    </div>
 
-                        <div class="legend-item">
-                            <span class="legend-icon flow"></span>
-                            <span>Fluxo</span>
-                        </div>
+                    <div class="legend-item">
+                        <span class="legend-icon flow"></span>
+                        <span>Fluxo</span>
+                    </div>
 
                 </div>
 
@@ -161,6 +162,7 @@
 
     </div>
 
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"> </script>
     <script src="estrutura.js"></script> 
 
 </body>
