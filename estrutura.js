@@ -180,7 +180,7 @@ const LIMIAR_CHUVA_MM_H       = 25;
  
  
 // SUBSTITUIR pelo cadastro de estações do MQTT.
-const ESTACOES_SIMULADAS = ["Estação 001",];
+const ESTACOES_SIMULADAS = ["Estação 001","Estação 002","Estação 003"];
 
 // Cada item é uma função que recebe o nome da estação e retorna
 // SUBSTITUIR pelos dados reais do MQTT.
