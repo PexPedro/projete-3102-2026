@@ -2,32 +2,34 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8"> 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Adapta ao tamanho da tela. -->
     <title>ARGOS</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css"> <!-- Conecta o arquivo de estilos CSS. -->
 </head>
 <body>
 
     <div id="login-page"> 
         <div class="login-box"> 
-            <h1 id="titulo">Configuração de Acesso</h1>
+
+            <h1 id="titulo">Configuração de Acesso</h1> 
 
             <input
                 type="text"
                 id="username"
                 placeholder="Usuário"
-            > 
+            >
 
             <input
                 type="password"
                 id="password"
                 placeholder="Senha"
             > 
-
+            
             <button onclick="login()">
                 Entrar 
             </button>
+
         </div>
     </div>
 
@@ -36,27 +38,28 @@
         <div class="navbar"> 
 
             <button class="tab active"
-                    onclick="openTab('map')">
+                    onclick="openTab('map', event)">
                 Mapa 
             </button>
 
             <button class="tab"
-                    onclick="openTab('alertas')">
-                Alertas 
+                    onclick="openTab('alertas', event)">
+                Alertas
+                <span class="badge-alerta" id="badge-alertas">0</span>
             </button>
 
             <button class="tab"
-                    onclick="openTab('historico')">
-                Histórico 
+                    onclick="openTab('historico', event)">
+                Histórico
             </button>
 
             <button class="tab"
-                    onclick="openTab('diagnostico')">
-                Diagnóstico de Rede 
+                    onclick="openTab('diagnostico', event)">
+                Diagnóstico de Rede
             </button>
 
             <button class="tab"
-                    onclick="openTab('relatorios')">
+                    onclick="openTab('relatorios', event)">
                 Relatórios 
             </button>
 
@@ -66,57 +69,62 @@
 
             <div id="mapa-regiao"></div>
 
-                <div class="legend-box">
+            <div class="legend-box">
 
-                    <h3>Legenda</h3>
+                <h3>Legenda</h3>
 
-                    <div class="legend-item">
-                        <span class="legend-icon station"></span>
-                        <span>Estação</span>
-                    </div>
-
-                    <div class="legend-item">
-                        <span class="legend-icon condition"></span>
-                        <span>Condição</span>
-                    </div>
-
-                    <div class="legend-item">
-                        <span class="legend-icon flow"></span>
-                        <span>Fluxo</span>
-                    </div>
-
+                <div class="legend-item">
+                    <span class="legend-icon station"></span>
+                    <span>Estação</span>
                 </div>
+
+                <div class="legend-item">
+                    <span class="legend-icon condition"></span> 
+                    <span>Condição</span>
+                </div>
+
+                <div class="legend-item">
+                    <span class="legend-icon flow"></span> 
+                    <span>Fluxo</span>
+                </div>
+
+            </div>
 
         </div>
 
         <div id="alertas" class="content">
-            <h1>Alertas</h1> 
+            <h1>Alertas</h1>
+            <!-- O JS insere os cards aqui via lista.prepend(card),
+                com o mais recente no topo. Quando o MQTT estiver ativo, 
+                registrarAlerta() vai inserir neste elemento — 
+                nenhuma mudança necessária no HTML. -->
+            <div id="lista-alertas"></div>
         </div>
 
         <div id="historico" class="content">
-            <h1>Histórico</h1> 
+            <h1>Histórico</h1>
         </div>
 
         <div id="diagnostico" class="content">
-            <h1>Diagnóstico de Rede</h1> 
+            <h1>Diagnóstico de Rede</h1>
         </div>
 
         <div id="relatorios" class="content">
 
             <h1>Relatórios</h1>
 
-            <div id="lista-relatorios"></div>
+            <div id="lista-relatorios"></div> 
 
             <button
                 class="add-report-btn"
                 onclick="abrirRelatorio()">
-                +
+                + 
             </button>
 
         </div>
 
     </div>
-    
+
     <div id="report-modal" class="modal">
 
         <div class="report-window">
@@ -126,7 +134,7 @@
                 <button
                     class="cancel-btn"
                     onclick="fecharRelatorio()">
-                    Cancelar
+                    Cancelar 
                 </button>
 
             </div>
@@ -134,26 +142,24 @@
             <div class="report-body">
 
                 <label>Nome:</label>
-                <input type="text" id="nome">
+                
+                <input type="text" id="nome" name="nome">
 
                 <label>Instituição vinculada:</label>
-                <input type="text" id="instituicao">
+                <input type="text" id="instituicao" name="instituicao">
 
                 <label>Situação:</label>
-                <input type="text" id="situacao">
+                <input type="text" id="situacao" name="situacao">
 
                 <label>Documentação:</label>
-
-                <textarea id="documentacao"></textarea>
+                <textarea id="documentacao" name="documentacao"></textarea>
 
                 <div class="save-area">
-
                     <button
                         class="save-btn"
                         onclick="salvarRelatorio()">
-                        Salvar
+                        Salvar 
                     </button>
-
                 </div>
 
             </div>
@@ -162,7 +168,7 @@
 
     </div>
 
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"> </script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="estrutura.js"></script> 
 
 </body>
