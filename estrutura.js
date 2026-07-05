@@ -180,7 +180,7 @@ const LIMIAR_CHUVA_MM_H       = 25;
  
  
 // SUBSTITUIR pelo cadastro de estações do MQTT.
-const ESTACOES_SIMULADAS = ["Estação 001",];
+const ESTACOES_SIMULADAS = ["Estação 001", "Estação 002", "Estação 003",];
 
 // Cada item é uma função que recebe o nome da estação e retorna
 // SUBSTITUIR pelos dados reais do MQTT.
@@ -231,7 +231,22 @@ function gerarAlertaSimulado() {
 // ESTA FUNÇÃO PERMANECE COM MQTT, mas o chamador muda.
 function registrarAlerta(dados) {
  
-    const lista = document.getElementById("lista-alertas");
+    const idColuna = "col-" + dados.estacao.replace(/\s+/g, '-').toLowerCase();
+    let coluna = document.getElementById(idColuna);
+ 
+    if (!coluna) {
+        coluna = document.createElement("div");
+        coluna.className = "coluna-estacao";
+        coluna.id = idColuna;
+ 
+        const titulo = document.createElement("div");
+        titulo.className = "coluna-titulo";
+        titulo.textContent = dados.estacao;
+        coluna.appendChild(titulo);
+ 
+        const lista = document.getElementById("lista-alertas").appendChild(coluna);
+    }
+
     const card  = document.createElement("div");
     card.className = "alerta-card";
  
@@ -248,7 +263,12 @@ function registrarAlerta(dados) {
         <div class="alerta-timestamp">${timestamp}</div>
     `;
  
-    lista.prepend(card);    // Alerta mais recente primeiro
+    const primeiroCard = coluna.querySelector(".alerta-card");
+    if (primeiroCard) {
+        coluna.insertBefore(card, primeiroCard);
+    } else {
+        coluna.appendChild(card);
+    }
  
     // Atualiza o badge, ocultado automaticamente quando o usuário abre a aba.
     contadorAlertas++;
