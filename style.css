@@ -304,9 +304,28 @@ body {
     line-height: 1;
 }
 
-#alertas {
-    overflow-y: auto;
-    max-height: calc(100vh - 55px); 
+#lista-alertas {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 16px;
+    overflow-x: auto;
+}
+ 
+.coluna-estacao {
+    flex: 1;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+ 
+.coluna-titulo {
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--cor-texto);
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--cor-destaque);
 }
  
 .alerta-card {
@@ -318,13 +337,6 @@ body {
     margin-bottom: 12px;
     max-width: 420px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-}
- 
-.alerta-estacao {
-    font-weight: bold;
-    font-size: 15px;
-    color: #111827;
-    margin-bottom: 6px;
 }
  
 .alerta-mensagem {
