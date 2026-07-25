@@ -7,36 +7,19 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <link rel="stylesheet" href="style.css"> <!-- Conecta o arquivo de estilos CSS. -->
 </head>
+
 <body>
 
-    <div id="login-page"> 
-        <div class="login-box"> 
-            <h1 id="titulo">Configuração de Acesso</h1> 
-            <input type="text" id="username" placeholder="Usuário">
-            <input type="password" id="password" placeholder="Senha"> 
-            <button onclick="login()">Entrar</button>
-
-        </div>
-    </div>
-
-    <div id="map-page" style="display:none;"> 
-
+    <div id="map-page" style="display:flex;"> 
         <div class="navbar"> 
-
             <button class="tab active"
                     onclick="openTab('map', event)">
                 Mapa 
             </button>
 
             <button class="tab"
-                    onclick="openTab('alertas', event)">
-                Alertas
-                <span class="badge-alerta" id="badge-alertas">0</span>
-            </button>
-
-            <button class="tab"
-                    onclick="openTab('historico', event)">
-                Histórico
+                    onclick="openTab('analise', event)">
+                Análise Gráfica
             </button>
 
             <button class="tab"
@@ -52,49 +35,91 @@
         </div>
 
         <div id="map" class="content active-content">
-
             <div id="mapa-regiao"></div>
+            <div id="painel-estacao" class="painel-estacao">
+                <h2 id="titulo-estacao">Nenhuma estação selecionada</h2>
+                <hr>
+                <p>
+                    <strong>Status:</strong>
+                    <span id="status-estacao">Normal</span>
+                </p>
 
-            <div class="legend-box">
+                <p>
+                    <strong>Alertas ativos:</strong>
+                    <span id="alertas-estacao">0</span>
+                </p>
 
-                <h3>Legenda</h3>
+                <p>
+                    <strong>Última atualização:</strong>
+                    <span id="hora-estacao">--</span>
+                </p>
 
-                <div class="legend-item">
-                    <span class="legend-icon station"></span>
-                    <span>Estação</span>
-                </div>
-
-                <div class="legend-item">
-                    <span class="legend-icon condition"></span> 
-                    <span>Condição</span>
-                </div>
-
-                <div class="legend-item">
-                    <span class="legend-icon flow"></span> 
-                    <span>Fluxo</span>
-                </div>
-
+                <h3>Eventos</h3>
+                <div id="lista-alertas">Nenhum alerta.</div>
             </div>
-
         </div>
 
-        <div id="alertas" class="content">
-            <h1>Alertas</h1>
-            <!-- O JS insere os cards aqui via lista.prepend(card),
-                com o mais recente no topo. Quando o MQTT estiver ativo, 
-                registrarAlerta() vai inserir neste elemento — 
-                nenhuma mudança necessária no HTML. -->
-            <div id="lista-alertas"></div>
-        </div>
+        <div id="analise" class="content">
+            <h1>Análise Gráfica</h1>
+            <div class="analysis-container">
+                <div class="analysis-sidebar">
+                    <h2>Variáveis</h2>
 
-        <div id="historico" class="content">
-            <h1>Histórico</h1>
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked
+                            onchange="toggleDataset(0)">
+                        Temperatura
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked
+                            onchange="toggleDataset(1)">
+                        Umidade
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked
+                            onchange="toggleDataset(2)">
+                        Pluviometria
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked
+                            onchange="toggleDataset(3)">
+                        Velocidade do Vento
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked
+                            onchange="toggleDataset(4)">
+                        Nível do Rio
+                    </label>
+                </div>
+
+                <div class="analysis-chart">
+                    <div class="chart-controls">
+                        <button class="chart-btn" onclick="resetChartZoom()">Reset Zoom</button>
+                    </div>
+                    <canvas id="sensorChart"></canvas>
+                </div>
+                
+            </div>
         </div>
 
         <div id="diagnostico" class="content">
             <h1>Diagnóstico de Rede</h1>
             <div id="rede-container">
-                <svg id="rede-svg"></svg>
+                <div id="rede-cards" class="rede-cards"></div>
                 <div id="rede-legenda">
                     <div class="leg-item"><span class="leg-dot estavel"></span>Estável</div>
                     <div class="leg-item"><span class="leg-dot instavel"></span>Instável</div>
@@ -104,65 +129,53 @@
         </div>
 
         <div id="relatorios" class="content">
-
             <h1>Relatórios</h1>
-
             <div id="lista-relatorios"></div> 
-
-            <button
+             <button
                 class="add-report-btn"
                 onclick="abrirRelatorio()">
                 + 
-            </button>
-
+             </button>
         </div>
-
     </div>
 
-    <div id="report-modal" class="modal">
-
-        <div class="report-window">
-
-            <div class="report-header">
-
-                <button
+        <div id="report-modal" class="modal">
+           <div class="report-window">
+                <div class="report-header">
+                   <button
                     class="cancel-btn"
                     onclick="fecharRelatorio()">
                     Cancelar 
-                </button>
-
-            </div>
-
-            <div class="report-body">
-
-                <label>Nome:</label>
-                
-                <input type="text" id="nome" name="nome">
-
-                <label>Instituição vinculada:</label>
-                <input type="text" id="instituicao" name="instituicao">
-
-                <label>Situação:</label>
-                <input type="text" id="situacao" name="situacao">
-
-                <label>Documentação:</label>
-                <textarea id="documentacao" name="documentacao"></textarea>
-
-                <div class="save-area">
-                    <button
-                        class="save-btn"
-                        onclick="salvarRelatorio()">
-                        Salvar 
-                    </button>
+                   </button>
                 </div>
 
-            </div>
+                <div class="report-body">
+                    <label>Nome:</label>
+                    <input type="text" id="nome" name="nome">
 
+                    <label>Instituição vinculada:</label>
+                    <input type="text" id="instituicao" name="instituicao">
+
+                    <label>Situação:</label>
+                    <input type="text" id="situacao" name="situacao">
+
+                    <label>Documentação:</label>
+                    <textarea id="documentacao" name="documentacao"></textarea>
+
+                    <div class="save-area">
+                        <button
+                            class="save-btn"
+                            onclick="salvarRelatorio()">
+                            Salvar 
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-    </div>
-
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     <script src="estrutura.js"></script> 
 
 </body>
