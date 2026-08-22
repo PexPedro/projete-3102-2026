@@ -2,14 +2,41 @@ function checkAuth() {
     if (!sessionStorage.getItem('argos_auth')) {window.location.href = 'login.html';}
 }
 
-    /*document.addEventListener('DOMContentLoaded', () => {
+const API_URL = "http://localhost:3000/api";
 
-        if (!document.getElementById('mapa-regiao')) return;
-        checkAuth();
-        iniciarMapa();
-        //Substituir por cliente.connect() / cliente.subscribe()
-        setTimeout(() => { if (mapa) mapa.invalidateSize(); }, 100);
-    });*/
+async function buscarEstacoes() {
+    try {
+        const resposta = await fetch(`${API_URL}/estacoes`);
+        if (!resposta.ok) {
+            throw new Error(`Erro HTTP: ${resposta.status}`);
+        }
+        const estacoes = await resposta.json();
+        return estacoes;
+
+    } catch (erro) {
+        console.error("Erro ao buscar estações:",erro);
+        return [];
+    }
+}
+
+async function buscarDados(endpoint, fallback) {
+    try {
+        const resposta = await fetch(`${API_URL}${endpoint}`);
+        if (!resposta.ok) throw new Error(`Erro HTTP: ${resposta.status}`);
+        return await resposta.json();
+    } catch (erro) {
+        console.error(`Erro ao buscar ${endpoint}:`, erro);
+        return fallback;
+    }
+}
+
+function prepararEstacoes(estacoes) {
+    return estacoes.map(estacao => ({
+        ...estacao,
+        alertas: Number(estacao.alertas) || 0,
+        historico: Array.isArray(estacao.historico) ? estacao.historico : []
+    }));
+}
 
 // NAVEGAÇÃO 
 function openTab(tabId, event) {
@@ -46,54 +73,15 @@ let estacaoSelecionada = null;
 
 // Marcador de exemplo da primeira estação ARGOS.
 // Futuramente, este marcador virá dos dados do broker MQTT.
-const ESTACOES = [
+let ESTACOES = [];
 
-    {
-        id: 1,
-        nome: "Estação 001",
-        latitude: -22.2473,
-        longitude: -45.731,
-        alertas: 0,
-        historico: [],
-        marcador: null
-    },
-
-    {
-        id: 2,
-        nome: "Estação 002",
-        latitude: -22.3961,
-        longitude: -45.737,
-        alertas: 0,
-        historico: [],
-        marcador: null
-    },
-
-    {
-        id: 3,
-        nome: "Estação 003",
-        latitude: -22.2500,
-        longitude: -45.619,
-        alertas: 0,
-        historico: [],
-        marcador: null
-    },
-
-    {
-        id: 4,
-        nome: "Estação 004",
-        latitude: -22.2627,
-        longitude: -45.805,
-        alertas: 0,
-        historico: [],
-        marcador: null
-    }
-];
-
-function iniciarMapa() {
+async function iniciarMapa() {
 
     if (mapa) return;
     mapa = L.map('mapa-regiao').setView([-22.3, -45.9], 8);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19}).addTo(mapa);
+
+    ESTACOES = prepararEstacoes(await buscarEstacoes());
 
     ESTACOES.forEach(estacao => {
         const icone = L.divIcon({className:"",iconSize:[25,41],iconAnchor:[12,41],popupAnchor:[1,-34],
@@ -106,9 +94,9 @@ function iniciarMapa() {
         estacao.marcador = L.marker([estacao.latitude,estacao.longitude],{icon:icone}).addTo(mapa);
         estacao.marcador.on("click", function(){
             estacaoSelecionada = estacao;
-            estacao.alertas = 0;
             atualizarBadges();
             atualizarPainel(estacao);
+            atualizarGrafico();
         });
         estacao.marcador.bindPopup(`<b>${estacao.nome}</b><br>Alertas ativos: ${estacao.alertas}`);
     });
@@ -120,7 +108,9 @@ function atualizarPainel(estacao){
     document.getElementById("titulo-estacao").textContent = estacao.nome;
     document.getElementById("status-estacao").textContent = estacao.historico.length > 0 ? "ALERTA" : "Normal";
     document.getElementById("alertas-estacao").textContent = estacao.historico.length;
-    document.getElementById("hora-estacao").textContent = new Date().toLocaleTimeString();
+    document.getElementById("hora-estacao").textContent = estacao.ultimaAtualizacao
+        ? new Date(estacao.ultimaAtualizacao).toLocaleTimeString('pt-BR')
+        : '--';
 
     const lista = document.getElementById("lista-alertas");
     lista.innerHTML = "";
@@ -156,83 +146,7 @@ function atualizarBadges(){
     });
 }
 
-/* SIMULAÇÃO DE ALERTAS
-   DEVE SER SUBSTITUÍDO PELO MQTT:
-   1. Remover ESTACOES_SIMULADAS e POOL_ALERTAS.
-   2. Remover gerarAlertaSimulado().
-   3. Remover setInterval() dentro de iniciarSimulacaoAlertas().
-   4. Substituir pelo código de conexão MQTT,ex:
-
-      import mqtt from 'https://unpkg.com/mqtt/dist/mqtt.min.js';
-      function Alertas() {
-          const cliente = mqtt.connect('ws://SEU_BROKER_IP:9001');
-          cliente.subscribe('argos/alertas/#');
-          cliente.on('message', (topico, payload) => {
-              const dado = JSON.parse(payload.toString());
-              // dado deve conter: { estacao, sensor, mensagem }
-              registrarAlerta(dado); -> NÃO precisa ser alterada.
-          });
-      }
-   ============================================================ */
- 
-let contadorAlertas = 0; // (Controla o badge) 
-let simulacaoIniciada = false; // Evita múltiplas simulações rodando ao mesmo tempo 
- 
-// AJUSTAR VALORES para a calibração real dos sensores.
-// Referência: Manual de Avisos Meteorológicos — INMET (2021) e Escala de Beaufort — WMO No. 8 (2018)
-const LIMIAR_UMIDADE_PERCENT  = 85;  
-const LIMIAR_VENTO_KMH        = 50;  
-const LIMIAR_CHUVA_MM_H       = 25;  
- 
- 
-// SUBSTITUIR pelo cadastro de estações do MQTT.
-const ESTACOES_SIMULADAS = ["Estação 001", "Estação 002", "Estação 003", "Estação 004"];
-
-// Cada item é uma função que recebe o nome da estação e retorna
-// SUBSTITUIR pelos dados reais do MQTT.
-const POOL_ALERTAS = [
- 
-    (est) => ({
-        estacao: est,
-        sensor:  " de Umidade",
-        mensagem: `Umidade relativa acima do limiar: ` +
-                  `${(Math.random() * 14 + LIMIAR_UMIDADE_PERCENT).toFixed(1)}% ` +
-                  `(limiar: ${LIMIAR_UMIDADE_PERCENT}%) — risco de chuva intensa`
-    }),
- 
-    (est) => ({
-        estacao: est,
-        sensor:  "Anemômetro",
-        mensagem: `Velocidade do vento acima do limiar: ` +
-                  `${(Math.random() * 50 + LIMIAR_VENTO_KMH).toFixed(1)} km/h ` +
-                  `(limiar: ${LIMIAR_VENTO_KMH} km/h) — ventania registrada`
-    }),
- 
-    (est) => ({
-        estacao: est,
-        sensor:  "Pluviômetro",
-        mensagem: `Precipitação acumulada acima do limiar: ` +
-                  `${(Math.random() * 55 + LIMIAR_CHUVA_MM_H).toFixed(1)} mm/h ` +
-                  `(limiar: ${LIMIAR_CHUVA_MM_H} mm/h) — chuva forte detectada`
-    }),
- 
-    (est) => ({
-        estacao: est,
-        sensor:  " de Umidade + Anemômetro",
-        mensagem: `Condição combinada crítica: umidade ` +
-                  `${(Math.random() * 10 + 88).toFixed(1)}% e ` +
-                  `ventos ${(Math.random() * 30 + 55).toFixed(1)} km/h ` +
-                  `— alta probabilidade de tempestade`
-    })
-];
- 
- 
-// REMOVER quando MQTT estiver ativo.
-function gerarAlertaSimulado() {
-    const estacao  = ESTACOES_SIMULADAS[Math.floor(Math.random() * ESTACOES_SIMULADAS.length)];
-    const gerador  = POOL_ALERTAS[Math.floor(Math.random() * POOL_ALERTAS.length)];
-    return gerador(estacao);
-}
+let contadorAlertas = 0;
 
 function obterTipoAlerta(sensor){
     switch(sensor){
@@ -279,7 +193,7 @@ function registrarAlerta(dados) {
     const hora       = agora.toLocaleTimeString('pt-BR');
     const timestamp  = `${data} — ${hora}`;
 
-    const estacao = ESTACOES.find(e => e.nome === dados.estacao);
+    const estacao = ESTACOES.find(e => e.id === Number(dados.estacaoId) || e.nome === dados.estacao);
     if(!estacao) return;
 
     estacao.alertas++;
@@ -302,17 +216,34 @@ function registrarAlerta(dados) {
         atualizarPainel(estacao);
     }
 }
- 
-// SUBSTITUIR pela conexão MQTT.
-function iniciarSimulacaoAlertas() {
-     if (simulacaoIniciada) return;
-    simulacaoIniciada = true;
-    setInterval(() => {registrarAlerta(gerarAlertaSimulado());}, 5000); // REMOVER pelo MQTT.
+
+async function atualizarAlertas() {
+    const alertas = await buscarDados('/alertas', {});
+    contadorAlertas = 0;
+    ESTACOES.forEach(estacao => {
+        const historico = alertas[estacao.id] ?? [];
+        estacao.historico = historico;
+        estacao.alertas = historico.length;
+        contadorAlertas += historico.length;
+    });
+    const badge = document.getElementById('badge-alertas');
+    if (badge) {
+        badge.textContent = contadorAlertas;
+        badge.style.display = contadorAlertas ? 'flex' : 'none';
+    }
+    atualizarBadges();
+    if (estacaoSelecionada) atualizarPainel(estacaoSelecionada);
+}
+
+function iniciarLeituraAPI() {
+    atualizarAlertas();
+    setInterval(atualizarAlertas, 5000);
 }
 
 // ANÁLISE GRÁFICA
 let sensorChart;
 let graficoTempoInicio = null;
+let graficoEstacaoId = null;
 
 const SERIES_CONFIG = [
     {
@@ -367,6 +298,10 @@ const SERIES_CONFIG = [
     }
 ];
 
+const SENSOR_FIELDS = [
+    'temperatura', 'umidade', 'pluviometria', 'velocidadeVento', 'nivelRio'
+];
+
 function gerarValorProximo(config, anterior) {
     if (anterior == null) return config.base;
     const delta = (Math.random() * config.step * 2) - config.step;
@@ -387,7 +322,7 @@ function iniciarGrafico(){
             fill: false,
             tension: 0.3,
             pointRadius: 4,
-            data: config.initial.map((value, index) => ({ x: index * 5, y: value }))
+            data: []
         }))
     },options:{
             responsive:true,
@@ -434,6 +369,24 @@ function iniciarGrafico(){
         }});
 }
 
+async function atualizarGrafico() {
+    if (!sensorChart || !ESTACOES.length) return;
+    const estacao = estacaoSelecionada ?? ESTACOES[0];
+    if (graficoEstacaoId !== estacao.id) {
+        sensorChart.data.datasets.forEach(dataset => { dataset.data = []; });
+        graficoEstacaoId = estacao.id;
+    }
+    const dados = await buscarDados(`/sensores/${estacao.id}`, {});
+    const tempo = Math.floor((Date.now() - graficoTempoInicio) / 1000);
+
+    SENSOR_FIELDS.forEach((campo, index) => {
+        const valor = Number(dados[campo]);
+        if (!Number.isFinite(valor)) return;
+        sensorChart.data.datasets[index].data.push({ x: tempo, y: valor });
+    });
+    sensorChart.update();
+}
+
 function toggleDataset(indice){
     const dataset = sensorChart.getDatasetMeta(indice);
     dataset.hidden = !dataset.hidden;
@@ -445,18 +398,7 @@ function resetChartZoom(){
     sensorChart.resetZoom();
 }
 
-setInterval(()=>{
-    if(!sensorChart) return;
-    const ultimoX = SERIES_CONFIG[0].initial.length > 0
-        ? (SERIES_CONFIG[0].initial.length - 1) * 5: 0;
-    const tempo = ultimoX + Math.ceil((Date.now() - graficoTempoInicio) / 1000);
-
-    sensorChart.data.datasets.forEach((dataset, index)=>{
-        const ultimo = dataset.data.length ? dataset.data[dataset.data.length - 1].y : null;
-        dataset.data.push({ x: tempo, y: gerarValorProximo(SERIES_CONFIG[index], ultimo) });
-    });
-    sensorChart.update();
-},5000);
+setInterval(atualizarGrafico, 5000);
 
 // DIAGNÓSTICO DE REDE
 
@@ -472,21 +414,8 @@ setInterval(()=>{
  *   });
  */
  
-let REDE_ESTACOES = [
-    { id: 'Estação 001' },
-    { id: 'Estação 002' },
-    { id: 'Estação 003' },
-    { id: 'Estação 004' },
-];
- 
-let REDE_CONEXOES = [
-    { de: 'Estação 001', para: 'Estação 002', qualidade: 'estavel' },
-    { de: 'Estação 001', para: 'Estação 003', qualidade: 'estavel' },
-    { de: 'Estação 002', para: 'Estação 003', qualidade: 'estavel' },
-    { de: 'Estação 001', para: 'Estação 004', qualidade: 'instavel' },
-    { de: 'Estação 002', para: 'Estação 004', qualidade: 'sem_conexao' },
-    { de: 'Estação 003', para: 'Estação 004', qualidade: 'sem_conexao' }
-];
+let REDE_ESTACOES = [];
+let REDE_CONEXOES = [];
  
 const CORES_REDE = {
     estavel:     '#22c55e',
@@ -502,7 +431,7 @@ function qualidadeEstacao(id) {
 }
 
 function obterDadosEstacao(id) {
-    return ESTACOES.find(est => est.nome === id) || { latitude: '-', longitude: '-' };
+    return ESTACOES.find(est => est.id === Number(id) || est.nome === id) || { latitude: '-', longitude: '-' };
 }
 
 function renderizarDiagnostico() {
@@ -534,36 +463,29 @@ function renderizarDiagnostico() {
     });
 }
  
-function simularVariacaoRede(qualidade) {
-    const tabela = {
-        estavel:     ['estavel', 'estavel', 'estavel', 'instavel'],
-        instavel:    ['instavel', 'instavel', 'estavel', 'sem_conexao'],
-        sem_conexao: ['sem_conexao', 'sem_conexao', 'instavel'],
-    };
-    const opcoes = tabela[qualidade] || tabela.sem_conexao;
-    return opcoes[Math.floor(Math.random() * opcoes.length)];
-}
- 
 let diagnosticoIniciado = false;
  
 function iniciarDiagnostico() {
     if (diagnosticoIniciado) return;
     diagnosticoIniciado = true;
  
-    renderizarDiagnostico();
     window.addEventListener('resize', renderizarDiagnostico);
-    let ciclo = 0;
- 
-    //SUBSTITUIR: intervalo e dados simulados serão removidos quando MQTT fornecer conectividade real
-    setInterval(() => {
-        ciclo++;
-        REDE_CONEXOES.forEach(con => {
-            if (Math.random() < 0.25) con.qualidade = simularVariacaoRede(con.qualidade);
-        });
- 
-        renderizarDiagnostico();
-    }, 4000);
+    atualizarDiagnostico();
 }
+
+async function atualizarDiagnostico() {
+    const conexoes = await buscarDados('/rede', []);
+    REDE_CONEXOES = conexoes.map(conexao => ({
+        ...conexao,
+        de: Number(conexao.de),
+        para: Number(conexao.para),
+        qualidade: conexao.qualidade === 'desconhecida' ? 'sem_conexao' : conexao.qualidade
+    }));
+    REDE_ESTACOES = ESTACOES.map(estacao => ({ id: estacao.id }));
+    renderizarDiagnostico();
+}
+
+setInterval(atualizarDiagnostico, 5000);
 
 // RELATÓRIOS
 function abrirRelatorio() {
@@ -629,11 +551,12 @@ function salvarRelatorio() {
 }
 
 // INTEGRAÇÃO GERAL 
-window.addEventListener("load", () => {
+window.addEventListener("load", async () => {
     if(!document.getElementById("map-page")) return;
     checkAuth();
-    iniciarMapa();
+    await iniciarMapa();
     iniciarGrafico();
+    atualizarGrafico();
     iniciarDiagnostico();
-    iniciarSimulacaoAlertas();
+    iniciarLeituraAPI();
 });

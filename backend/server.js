@@ -9,7 +9,7 @@ app.use(express.json());
 
 // Configuração do CORS para bloquear acessos de outras portas
 const corsOptions = {
-    origin: 'http://127.0.0.1:5500', // Substitua pela URL/Porta exata do seu frontend
+    origin: ['http://127.0.0.1:5500', 'http://localhost:5500'],
     optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
@@ -294,9 +294,90 @@ function conectarMQTT() {
 }
 
 function processarMensagemMQTT(topico, dados) {
-    console.log(
-        "Processando mensagem MQTT:",topico
+    if (!dados || typeof dados !== 'object' || Array.isArray(dados)) {
+        console.warn(`Payload MQTT inválido: ${topico}`);
+        return;
+    }
+
+    const tipo = identificarTipoMensagem(topico, dados);
+    if (!tipo) {
+        console.warn(`Tipo de mensagem MQTT não identificado: ${topico}`);
+        return;
+    }
+
+    if (tipo === 'rede') {
+        atualizarConexao(dados);
+        return;
+    }
+
+    const estacao = encontrarEstacao(dados, topico);
+    if (!estacao) {
+        console.warn(`Estação não identificada na mensagem MQTT: ${topico}`);
+        return;
+    }
+
+    const timestamp = dados.timestamp ?? new Date().toISOString();
+    estacao.ultimaAtualizacao = timestamp;
+
+    if (tipo === 'sensor') {
+        const sensores = DADOS_SENSORES[estacao.id];
+        Object.keys(sensores).forEach(campo => {
+            if (campo !== 'timestamp' && dados[campo] !== undefined) sensores[campo] = dados[campo];
+        });
+        sensores.timestamp = timestamp;
+        estacao.status = ALERTAS[estacao.id].length ? 'alerta' : 'normal';
+        return;
+    }
+
+    ALERTAS[estacao.id].unshift({
+        ...dados,
+        estacaoId: estacao.id,
+        estacao: estacao.nome,
+        horario: dados.horario ?? new Date(timestamp).toLocaleString('pt-BR')
+    });
+    estacao.status = 'alerta';
+}
+
+function identificarTipoMensagem(topico, dados) {
+    const tipo = String(dados.tipo ?? dados.type ?? '').toLowerCase();
+    const tiposPorCampo = {
+        sensor: ['sensor', 'sensores', 'leitura'],
+        alerta: ['alerta', 'alertas', 'alarme'],
+        rede: ['rede', 'conexao', 'conexão', 'network']
+    };
+    const tipoDeclarado = Object.entries(tiposPorCampo)
+        .find(([, nomes]) => nomes.includes(tipo))?.[0];
+    if (tipoDeclarado) return tipoDeclarado;
+
+    const partes = topico.toLowerCase().split('/');
+    const tiposPorTopico = {
+        sensor: ['sensores', 'sensor', 'leituras'],
+        alerta: ['alertas', 'alerta', 'alarmes'],
+        rede: ['rede', 'conexoes', 'conexões', 'network']
+    };
+    return Object.entries(tiposPorTopico)
+        .find(([, nomes]) => partes.some(parte => nomes.includes(parte)))?.[0] ?? null;
+}
+
+function encontrarEstacao(dados, topico) {
+    const idNoTopico = topico.match(/(?:estacoes?|stations?)\/(\d+)/i)?.[1];
+    const estacaoId = Number(dados.estacaoId ?? dados.estacao_id ?? idNoTopico);
+    return ESTACOES.find(estacao => estacao.id === estacaoId || estacao.nome === dados.estacao);
+}
+
+function atualizarConexao(dados) {
+    const de = Number(dados.de);
+    const para = Number(dados.para);
+    if (!Number.isInteger(de) || !Number.isInteger(para) || de === para) return;
+
+    const par = [de, para].sort((a, b) => a - b).join(':');
+    const conexao = REDE_CONEXOES.find(item =>
+        [item.de, item.para].sort((a, b) => a - b).join(':') === par
     );
+    if (!conexao) return;
+
+    conexao.qualidade = dados.qualidade ?? conexao.qualidade;
+    conexao.ultimaAtualizacao = dados.timestamp ?? new Date().toISOString();
 }
 
 // Iniciar o servidor
