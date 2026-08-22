@@ -1,3 +1,26 @@
+:root {
+    --bg-primario:   #111827; 
+    --bg-secundario: #1f2937; 
+    --bg-borda:      #374151; 
+    --cor-destaque:  #3b82f6; 
+    --cor-texto:     white;   
+    --raio-sm:       6px;     
+    --raio-md:       12px;    
+}
+
+* {
+    margin: 0;           
+    padding: 0;          
+    box-sizing: border-box;      
+    font-family: Arial, sans-serif; 
+}
+
+body {
+    background: var(--bg-primario); 
+    color: var(--cor-texto);
+    overflow: hidden;
+}
+
 #login-page {
     height: 100vh;          
     display: flex;
