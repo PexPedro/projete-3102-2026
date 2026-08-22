@@ -1,0 +1,35 @@
+#login-page {
+    height: 100vh;          
+    display: flex;
+    justify-content: center; 
+    align-items: center;     
+}
+
+.login-box {
+    width: 350px;
+    display: flex;
+    flex-direction: column; 
+    gap: 15px;              
+    padding: 30px;
+    background: #1f2937; 
+    border-radius: 12px;    
+}
+
+.login-box h1 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.login-box input {
+    padding: 12px;
+    border: none;
+    border-radius: 6px; 
+}
+
+.login-box button {
+    padding: 12px;
+    border: none;
+    border-radius: 6px; 
+    cursor: pointer;
+    font-weight: bold;
+}
