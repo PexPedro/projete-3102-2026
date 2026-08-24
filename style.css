@@ -60,10 +60,12 @@ body {
 
 .content {
     display: none;   
-    width:100%;
-    height:calc(100vh - 58px);
-    position:relative;
-    overflow:hidden;
+    width: 100%;
+    height: calc(100vh - 58px);
+    position: relative;
+    /* Alterado de hidden para auto, liberando a rolagem vertical nas abas */
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .active-content {
