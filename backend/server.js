@@ -16,8 +16,7 @@ const estado = {
         { id: 4, nome: "Estação 004", latitude: -22.2627, longitude: -45.805, status: "normal" }
     ],
     sensores: { 1: {}, 2: {}, 3: {}, 4: {} },
-    alertas: { 1: [], 2: [], 3: [], 4: [] },
-    rede: []
+    alertas: { 1: [], 2: [], 3: [], 4: [] }
 };
 
 // Fila para armazenar as leituras que chegam rápido do MQTT

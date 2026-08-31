@@ -21,7 +21,9 @@ export function iniciarUI() {
     
     window.salvarRelatorio = () => {
         const lista = document.getElementById("lista-relatorios");
+        const instituicao = document.getElementById("instituicao").value;
         const situacao = document.getElementById("situacao").value;
+        const documentacao = document.getElementById("documentacao").value;
         const nome = document.getElementById("nome").value;
         
         const card = document.createElement("div");
@@ -30,7 +32,13 @@ export function iniciarUI() {
             <div class="report-title">Relatório ${lista.children.length + 1}</div>
             <div class="report-subtitle">${situacao}</div>
             <div class="report-date">${new Date().toLocaleDateString('pt-BR')}</div>
-            <div class="report-details" style="display: none;"><p><strong>Nome:</strong> ${nome}</p></div>
+            <div class="report-details" style="display: none;">
+                <p><strong>Nome:</strong> ${nome}</p>
+                <p><strong>Instituição vinculada:</strong> ${instituicao}</p>
+                <p><strong>Situação:</strong> ${situacao}</p>
+                <p><strong>Documentação:</strong></p>
+                <p class="doc-texto">${documentacao}</p>
+            </div>
         `;
 
         const detalhes = card.querySelector(".report-details");

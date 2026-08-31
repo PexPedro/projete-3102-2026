@@ -6,18 +6,42 @@ export function iniciarGrafico() {
 
     sensorChart = new Chart(canvas, {
         type: "line",
-        data: { 
+        data: {
             datasets: [
                 { label: "Temperatura", borderColor: '#3b82f6', data: [] },
                 { label: "Umidade", borderColor: '#10b981', data: [] },
                 { label: "Pluviometria", borderColor: '#f59e0b', data: [] },
-                { label: "Velocidade do vento", borderColor: '#ef4444', data: [] },
                 { label: "Nível do rio", borderColor: '#8b5cf6', data: [] }
-            ] 
-        }, 
+            ]
+        },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    enabled: true,
+                    mode: 'nearest',
+                    intersect: false
+                },
+                zoom: {
+                    pan: {
+                        enabled: true, 
+                        mode: 'x'
+                    },
+                    zoom: {
+                        wheel: {enabled: true},
+                        pinch: {enabled: true},
+                        mode: 'x'
+                    }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                intersect: false
+            },
             scales: {
                 x: { type: 'linear', title: { display: true, text: 'Tempo (s)' } },
                 y: { beginAtZero: true, title: { display: true, text: 'Valor' } }
@@ -34,9 +58,8 @@ export function atualizarGraficos(sensores, tempoAtual) {
     // Injeta os dados que vieram do servidor (se o servidor zerou, virá 0)
     sensorChart.data.datasets[0].data.push({ x: tempoAtual, y: estacao.temperatura || 0 });
     sensorChart.data.datasets[1].data.push({ x: tempoAtual, y: estacao.umidade || 0 });
-    sensorChart.data.datasets[2].data.push({ x: tempoAtual, y: estacao.pluviometria || 0 }); 
-    sensorChart.data.datasets[3].data.push({ x: tempoAtual, y: estacao.velocidadeVento || 0 });
-    sensorChart.data.datasets[4].data.push({ x: tempoAtual, y: estacao.nivelRio || 0 }); 
+    sensorChart.data.datasets[2].data.push({ x: tempoAtual, y: estacao.pluviometria || 0 });
+    sensorChart.data.datasets[3].data.push({ x: tempoAtual, y: estacao.nivelRio || 0 });
 
     // Remove pontos antigos (mantém os últimos 20)
     sensorChart.data.datasets.forEach(dataset => {

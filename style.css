@@ -36,11 +36,13 @@ body {
 
 .navbar {
     display: flex;
+    justify-content: space-between;
     background: var(--bg-secundario); 
     border-bottom: 1px solid var(--bg-borda);
 }
 
 .tab {
+    flex: 1;
     background: none;
     border: none;
     color: var(--cor-texto);
@@ -73,6 +75,12 @@ body {
     position: relative;
 }
 
+#analise.active-content {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
 #map {
     position: relative;
     height: calc(100vh - 58px); 
@@ -91,34 +99,91 @@ body {
 .painel-estacao{
     display:none;
     position:absolute;
-    top:80px;
-    right:15px;
-    width:280px;
-    min-height:260px;
-    background:white;
-    color:black;
+    top:18px;
+    left:15px;
+    width:270px;
+    background:#f8fafc;
+    color:#1f2937;
+    border:1px solid #cbd5e1;
     border-radius:8px;
-    box-shadow:0 3px 10px rgba(0,0,0,.25);
-    padding:15px;
+    box-shadow:0 6px 18px rgba(15,23,42,.24);
+    padding:14px;
     z-index:1000;
 }
 
+.painel-estacao-header,
+.alertas-titulo,
+.estacao-leituras p {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+}
+
 .painel-estacao h2{
-    font-size:20px;
-    margin-bottom:10px;
+    font-size:16px;
+    margin:0;
 }
 
-.painel-estacao h3{
-    margin-top:20px;
-    margin-bottom:8px;
+.fechar-painel {
+    border:0;
+    background:transparent;
+    color:#64748b;
+    cursor:pointer;
+    font-size:22px;
+    line-height:1;
+    padding:0 2px;
 }
 
-#lista-alertas{
-    max-height:180px;
+.fechar-painel:hover {
+    color:#1e293b;
+}
+
+.estacao-leituras {
+    border-top:1px solid #e2e8f0;
+    border-bottom:1px solid #e2e8f0;
+    margin:12px 0;
+    padding:8px 0;
+}
+
+.estacao-leituras p {
+    font-size:13px;
+    margin:7px 0;
+}
+
+.estacao-leituras strong {
+    color:#334155;
+    font-weight:600;
+}
+
+.alertas-titulo {
+    font-size:13px;
+    margin-bottom:6px;
+}
+
+.alertas-titulo strong {
+    min-width:20px;
+    border-radius:10px;
+    background:#e2e8f0;
+    color:#475569;
+    padding:2px 7px;
+    text-align:center;
+}
+
+#lista-alertas {
+    max-height:130px;
     overflow-y:auto;
-    border:1px solid #ddd;
-    padding:8px;
-    background:#fafafa;
+    color:#64748b;
+    font-size:12px;
+    line-height:1.35;
+}
+
+.alerta-item {
+    border-left:3px solid #f59e0b;
+    background:#fff7ed;
+    color:#9a3412;
+    margin-top:5px;
+    padding:6px 8px;
 }
 
 /* ===== ESTAÇÕES ===== */
@@ -162,11 +227,14 @@ body {
 
 .analysis-container{
     display:flex;
-    height:100%;
+    flex:1;
+    min-height:0;
 }
 
 .analysis-sidebar{
     width:260px;
+    display:flex;
+    flex-direction:column;
     background: var(--bg-secundario);
     padding:20px;
     border-right:1px solid var(--bg-borda);
@@ -190,20 +258,25 @@ body {
 
 .analysis-chart{
     flex:1;
-    padding:20px;
+    display:flex;
+    flex-direction:column;
+    padding:12px 20px;
     background: var(--cor-texto);
+    min-height:0;
 }
 
 #sensorChart{
     width:100%;
-    height:100%;
+    flex:1;
+    min-height:0;
 }
 
 .chart-controls {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 10px;
+    margin-top: auto;
+    padding-top: 20px;
 }
 
 .chart-btn {
@@ -379,125 +452,6 @@ body {
     font-size: 12px;
     color: #555;
 }
-
-/* ===== DIAGNÓSTICO DE REDE ===== */
-#rede-container {
-    position: relative;
-    min-height: calc(100vh - 200px);
-    border: 1px solid var(--bg-borda);
-    border-radius: var(--raio-md);
-    background: var(--bg-secundario);
-    margin-top: 16px;
-    padding: 24px;
-    overflow: auto;
-}
- 
-#rede-cards {
-    display: grid;
-    gap: 18px;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-}
-
-.rede-card {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 16px;
-    background: #111827;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 14px;
-    color: white;
-}
-
-.rede-card-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.rede-card-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: grid;
-    place-items: center;
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.1);
-}
-
-.rede-card-icon svg {
-    width: 24px;
-    height: 24px;
-    fill: white;
-}
-
-.rede-card-title {
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.status-badge {
-    margin-left: auto;
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
-.status-estavel { background: #166534; }
-.status-instavel { background: #b45309; }
-.status-sem_conexao { background: #b91c1c; }
-
-.rede-card-body {
-    display: grid;
-    gap: 8px;
-}
-
-.rede-card-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    color: #d1d5db;
-    font-size: 14px;
-}
-
-.rede-card-row strong {
-    color: #f8fafc;
-}
- 
-#rede-legenda {
-    position: absolute;
-    bottom: 16px;
-    right: 16px;
-    background: rgba(17, 24, 39, 0.9);
-    border: 1px solid var(--bg-borda);
-    border-radius: var(--raio-sm);
-    padding: 10px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
- 
-.leg-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--cor-texto);
-}
- 
-.leg-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
- 
-.leg-dot.estavel     { background: #22c55e; }
-.leg-dot.instavel    { background: #f59e0b; }
-.leg-dot.sem-conexao { background: #ef4444; }
-
 
 @media (max-width: 768px) {
 

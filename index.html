@@ -18,9 +18,6 @@
             <button class="tab" onclick="openTab('analise', event)">
                 Análise Gráfica
             </button>
-            <button class="tab" onclick="openTab('diagnostico', event)">
-                Diagnóstico de Rede
-            </button>
             <button class="tab" onclick="openTab('relatorios', event)">
                 Relatórios 
             </button>
@@ -29,13 +26,20 @@
         <div id="map" class="content active-content">
             <div id="mapa-regiao"></div>
             <div id="painel-estacao" class="painel-estacao">
-                <h2 id="titulo-estacao">Nenhuma estação selecionada</h2>
-                <hr>
-                <p><strong>Status:</strong> <span id="status-estacao">Normal</span></p>
-                <p><strong>Alertas ativos:</strong> <span id="alertas-estacao">0</span></p>
-                <p><strong>Última atualização:</strong> <span id="hora-estacao">--</span></p>
-                <h3>Eventos</h3>
-                <div id="lista-alertas">Nenhum alerta.</div>
+                <div class="painel-estacao-header">
+                    <h2 id="titulo-estacao">Estação</h2>
+                    <button id="fechar-painel-estacao" class="fechar-painel" type="button" aria-label="Fechar informações">&times;</button>
+                </div>
+                <div class="estacao-leituras">
+                    <p><span>Temperatura</span><strong id="temperatura-estacao">--</strong></p>
+                    <p><span>Umidade</span><strong id="umidade-estacao">--</strong></p>
+                    <p><span>Pluviometria</span><strong id="pluviometria-estacao">--</strong></p>
+                    <p><span>Nível do rio</span><strong id="nivel-rio-estacao">--</strong></p>
+                </div>
+                <div class="estacao-alertas">
+                    <div class="alertas-titulo"><span>Alertas</span><strong id="alertas-estacao">0</strong></div>
+                    <div id="lista-alertas">Nenhum alerta no momento.</div>
+                </div>
             </div>
         </div>
 
@@ -47,27 +51,14 @@
                     <label><input type="checkbox" checked onchange="toggleDataset(0)"> Temperatura</label>
                     <label><input type="checkbox" checked onchange="toggleDataset(1)"> Umidade</label>
                     <label><input type="checkbox" checked onchange="toggleDataset(2)"> Pluviometria</label>
-                    <label><input type="checkbox" checked onchange="toggleDataset(3)"> Velocidade do Vento</label>
-                    <label><input type="checkbox" checked onchange="toggleDataset(4)"> Nível do Rio</label>
-                </div>
-
-                <div class="analysis-chart">
+                    <label><input type="checkbox" checked onchange="toggleDataset(3)"> Nível do Rio</label>
                     <div class="chart-controls">
                         <button class="chart-btn" onclick="resetChartZoom()">Reset Zoom</button>
                     </div>
-                    <canvas id="sensorChart"></canvas>
                 </div>
-            </div>
-        </div>
 
-        <div id="diagnostico" class="content">
-            <h1>Diagnóstico de Rede</h1>
-            <div id="rede-container">
-                <div id="rede-cards" class="rede-cards"></div>
-                <div id="rede-legenda">
-                    <div class="leg-item"><span class="leg-dot estavel"></span>Estável</div>
-                    <div class="leg-item"><span class="leg-dot instavel"></span>Instável</div>
-                    <div class="leg-item"><span class="leg-dot sem-conexao"></span>Sem conexão</div>
+                <div class="analysis-chart">
+                    <canvas id="sensorChart"></canvas>
                 </div>
             </div>
         </div>
