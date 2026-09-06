@@ -16,7 +16,8 @@ const estado = {
         { id: 4, nome: "Estação 004", latitude: -22.2627, longitude: -45.805, status: "normal" }
     ],
     sensores: { 1: {}, 2: {}, 3: {}, 4: {} },
-    alertas: { 1: [], 2: [], 3: [], 4: [] }
+    alertas: { 1: [], 2: [], 3: [], 4: [] },
+    previsoes: { 1: null, 2: null, 3: null, 4: null } // Estado independente para as previsões da IA
 };
 
 // Fila para armazenar as leituras que chegam rápido do MQTT
@@ -37,6 +38,9 @@ app.post('/api/login', (req, res) => {
     return res.status(401).json({ sucesso: false });
 });
 
+// =========================================================
+// ROTA 1: DASHBOARD (Consome a fila de sensores originais)
+// =========================================================
 app.get('/api/dashboard', verificarAutenticacao, (req, res) => {
     const dadosParaEnviar = JSON.parse(JSON.stringify(estado.sensores));
 
@@ -64,6 +68,14 @@ app.get('/api/dashboard', verificarAutenticacao, (req, res) => {
     });
 });
 
+// Rota dedicada e protegida para a aba de previsões
+app.get('/api/previsao', verificarAutenticacao, (req, res) => {
+    res.json({
+        sucesso: true,
+        previsoes: estado.previsoes
+    });
+});
+
 function iniciarMQTT() {
     if (process.env.MQTT_ENABLED !== "true") return;
 
@@ -81,7 +93,9 @@ function iniciarMQTT() {
 
     cliente.on("connect", () => {
         console.log("MQTT Conectado.");
+        // Inscreve nos dois tópicos simultaneamente
         cliente.subscribe(process.env.MQTT_TOPIC);
+        cliente.subscribe(process.env.MQTT_TOPIC_PREVISAO);
     });
 
     cliente.on("error", (err) => {
@@ -91,29 +105,45 @@ function iniciarMQTT() {
     cliente.on("message", (topico, mensagem) => {
         try {
             const payloadStr = mensagem.toString().trim();
-            const partes = payloadStr.split(' ');
-            
-            if (partes.length < 2) return;
 
-            const estacaoMatch = partes[0].match(/estacao=([^,]+)/);
-            if (!estacaoMatch || estacaoMatch[1] !== 'sapucai') return;
+            // =========================================================
+            // 1. DADOS DO SENSOR (Vem da Placa/ESP32)
+            // =========================================================
+            if (topico === process.env.MQTT_TOPIC) {
+                const partes = payloadStr.split(' ');
+                
+                if (partes.length < 2) return;
 
-            const id = 1; 
-            const leiturasBrutas = {};
-            
-            partes[1].split(',').forEach(par => {
-                const [chave, valor] = par.split('=');
-                leiturasBrutas[chave] = parseFloat(valor);
-            });
+                const estacaoMatch = partes[0].match(/estacao=([^,]+)/);
+                if (!estacaoMatch || estacaoMatch[1] !== 'sapucai') return;
 
-            const pluv = leiturasBrutas['chuva_mm'] !== undefined ? leiturasBrutas['chuva_mm'] : 0;
-            const rio = leiturasBrutas['cota'] !== undefined ? leiturasBrutas['cota'] : 0;
+                const id = 1; 
+                const leiturasBrutas = {};
+                
+                partes[1].split(',').forEach(par => {
+                    const [chave, valor] = par.split('=');
+                    leiturasBrutas[chave] = parseFloat(valor);
+                });
 
-            // Em vez de substituir, empurra para a fila de mensagens
-            if (!filaMensagens[id]) filaMensagens[id] = [];
-            filaMensagens[id].push({ pluv, rio });
+                const pluv = leiturasBrutas['chuva_mm'] !== undefined ? leiturasBrutas['chuva_mm'] : 0;
+                const rio = leiturasBrutas['cota'] !== undefined ? leiturasBrutas['cota'] : 0;
 
-            console.log(`[MQTT Enfileirado] Estação ${id} | Chuva: ${pluv} | Rio: ${rio} (Total na fila: ${filaMensagens[id].length})`);
+                if (!filaMensagens[id]) filaMensagens[id] = [];
+                filaMensagens[id].push({ pluv, rio });
+
+                console.log(`[MQTT Sensor] Estação ${id} | Chuva: ${pluv} | Rio: ${rio} (Fila: ${filaMensagens[id].length})`);
+            }
+            // =========================================================
+            // 2. DADOS DA PREVISÃO (Vem da IA via Python/Julia)
+            // =========================================================
+            else if (topico === process.env.MQTT_TOPIC_PREVISAO) {
+                const nivelPrevisto = parseFloat(payloadStr);
+                
+                // Salva o valor no estado dedicado para a rota /api/previsao
+                estado.previsoes[1] = nivelPrevisto;
+
+                console.log(`[MQTT Previsão] Estação 1 | Nível Previsto atualizado: ${nivelPrevisto}`);
+            }
 
         } catch (err) {
             console.error("Erro parser MQTT:", err.message);

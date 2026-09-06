@@ -21,6 +21,9 @@
             <button class="tab" onclick="openTab('relatorios', event)">
                 Relatórios 
             </button>
+            <button class="tab" onclick="openTab('previsao', event)">
+                Previsão
+            </button>
         </div>
 
         <div id="map" class="content active-content">
@@ -68,6 +71,15 @@
             <div id="lista-relatorios"></div> 
              <button class="add-report-btn" onclick="abrirRelatorio()">+ </button>
         </div>
+
+        <!-- ABA DE PREVISÃO ATUALIZADA -->
+        <div id="previsao" class="content">
+            <h1>Previsão do Nível do Rio</h1>
+            <div style="margin-top: 40px; padding: 20px; background: #393c3f; border-radius: 8px; width: 900px; text-align: center; ">
+            <h3>Estação 001</h3>
+            <p>Nível Previsto: <strong id="valor-previsao">Aguardando...</strong></p>
+            </div>
+        </div>
     </div>
 
     <div id="report-modal" class="modal">
@@ -96,8 +108,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     
-    <!-- Modificado: Aponta para a pasta js e carrega como módulo -->
     <script type="module" src="js/app.js"></script> 
+    <!-- NOVO SCRIPT PARA A PREVISÃO -->
+    <script type="module" src="js/prev.js"></script>
 
 </body>
 </html>
