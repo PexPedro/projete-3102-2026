@@ -33,7 +33,11 @@ function verificarAutenticacao(req, res, next) {
 app.post('/api/login', (req, res) => {
     const hashDigitado = crypto.createHash('sha256').update(req.body.senha).digest('hex');
     if (req.body.usuario === process.env.USUARIO_VALIDO && hashDigitado === process.env.HASH_SENHA) {
-        return res.json({ sucesso: true, token: process.env.API_TOKEN });
+        return res.json({ 
+            httpOnly: true,
+            sucesso: true, 
+            token: process.env.API_TOKEN 
+        });
     }
     return res.status(401).json({ sucesso: false });
 });
@@ -42,6 +46,7 @@ app.post('/api/login', (req, res) => {
 // ROTA 1: DASHBOARD (Consome a fila de sensores originais)
 // =========================================================
 app.get('/api/dashboard', verificarAutenticacao, (req, res) => {
+
     const dadosParaEnviar = JSON.parse(JSON.stringify(estado.sensores));
 
     // Se houver itens na fila da Estação 1, entrega o próximo da fila
