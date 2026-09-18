@@ -51,6 +51,8 @@ app.get('/api/dashboard', verificarAutenticacao, (req, res) => {
             ...dadosParaEnviar[1],
             pluviometria: proximaLeitura.pluv,
             nivelRio: proximaLeitura.rio,
+            umidade: proximaLeitura.umid,
+            temperatura: proximaLeitura.temp,
             novoDado: true
         };
     } else {
@@ -110,28 +112,16 @@ function iniciarMQTT() {
             // 1. DADOS DO SENSOR (Vem da Placa/ESP32)
             // =========================================================
             if (topico === process.env.MQTT_TOPIC) {
-                const partes = payloadStr.split(' ');
-                
-                if (partes.length < 2) return;
+                const partes = payloadStr.split(',');
+                const [pluv, rio, temp, umid] = partes.map(parseFloat);
+    
+                const leitura = { pluv, rio, temp, umid };
 
-                const estacaoMatch = partes[0].match(/estacao=([^,]+)/);
-                if (!estacaoMatch || estacaoMatch[1] !== 'sapucai') return;
+                filaMensagens[1].push(leitura);
 
-                const id = 1; 
-                const leiturasBrutas = {};
-                
-                partes[1].split(',').forEach(par => {
-                    const [chave, valor] = par.split('=');
-                    leiturasBrutas[chave] = parseFloat(valor);
-                });
+                estado.sensores[1] = leitura;
 
-                const pluv = leiturasBrutas['chuva_mm'] !== undefined ? leiturasBrutas['chuva_mm'] : 0;
-                const rio = leiturasBrutas['cota'] !== undefined ? leiturasBrutas['cota'] : 0;
-
-                if (!filaMensagens[id]) filaMensagens[id] = [];
-                filaMensagens[id].push({ pluv, rio });
-
-                console.log(`[MQTT Sensor] Estação ${id} | Chuva: ${pluv} | Rio: ${rio} (Fila: ${filaMensagens[id].length})`);
+                console.log(`Estação 1 | Pluv: ${pluv}, Rio: ${rio}, Temp: ${temp}, Umid: ${umid}`);
             }
             // =========================================================
             // 2. DADOS DA PREVISÃO (Vem da IA via Python/Julia)
