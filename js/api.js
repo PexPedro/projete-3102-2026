@@ -12,9 +12,12 @@ export async function buscarDados() {
         const res = await fetch(`${CONFIG.API_URL}/dashboard`, {
             headers: { 'Authorization': token }
         });
-        
+    
         if (res.status === 401) throw new Error("Sessão inválida");
         return await res.json();
+
+     
+
     } catch (e) {
         window.location.href = 'login.html';
         return null;
