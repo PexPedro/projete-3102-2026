@@ -12,7 +12,7 @@ async function atualizarPrevisao() {
         if (previsaoEstacao1 !== null && previsaoEstacao1 !== undefined) {
             elementoExibicao.innerText = previsaoEstacao1 + " cm"; 
         } else {
-            elementoExibicao.innerText = "Aguardando dado da IA...";
+            elementoExibicao.innerText = "Dados não encontrados...";
         }
     }
 }
