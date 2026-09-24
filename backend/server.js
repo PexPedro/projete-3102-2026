@@ -119,14 +119,45 @@ function iniciarMQTT() {
             if (topico === process.env.MQTT_TOPIC) {
                 const partes = payloadStr.split(',');
                 const [pluv, rio, temp, umid] = partes.map(parseFloat);
-    
-                const leitura = { pluv, rio, temp, umid };
+                let ChuvaAlerta;
+                let RioAlerta;
+                let TempAlerta;
+                let UmidAlerta;
+
+                if (pluv >= 50 || rio >= 15 || temp <= 12 || temp >=33 || umid <= 20 || umid >= 90) {
+                }
+                if (pluv >=50){
+                    ChuvaAlerta= pluv + ":A";
+                }
+                else{
+                    ChuvaAlerta= pluv + ":N";
+                }
+                if (rio >= 15){
+                    RioAlerta = rio + ":A";
+                }
+                else{
+                    RioAlerta = rio + ":N";
+                }
+                if (temp <= 12 || temp >=33){
+                    TempAlerta = temp + ":A";
+                }
+                else{
+                    TempAlerta = temp + ":N";
+                }
+                if (umid <= 20 || umid >= 90){
+                    UmidAlerta = umid + ":A";
+                }
+                else{
+                    UmidAlerta = umid + ":N";
+                }
+
+                const leitura = { ChuvaAlerta, RioAlerta, TempAlerta, UmidAlerta };
 
                 filaMensagens[1].push(leitura);
 
                 estado.sensores[1] = leitura;
 
-                console.log(`Estação 1 | Pluv: ${pluv}, Rio: ${rio}, Temp: ${temp}, Umid: ${umid}`);
+                console.log(`Estação 1 | Pluv: ${ChuvaAlerta}, Rio: ${RioAlerta}, Temp: ${TempAlerta}, Umid: ${UmidAlerta}`);
             }
             // =========================================================
             // 2. DADOS DA PREVISÃO (Vem da IA via Python/Julia)
