@@ -56,11 +56,11 @@ export function atualizarGraficos(sensores, tempoAtual) {
     const estacao = sensores[1];
 
     // Injeta os dados que vieram do servidor (se o servidor zerou, virá 0)
-    sensorChart.data.datasets[0].data.push({ x: tempoAtual, y: estacao.temperatura || 0 });
-    sensorChart.data.datasets[1].data.push({ x: tempoAtual, y: estacao.umidade || 0 });
-    sensorChart.data.datasets[2].data.push({ x: tempoAtual, y: estacao.pluviometria || 0 });
-    sensorChart.data.datasets[3].data.push({ x: tempoAtual, y: estacao.nivelRio || 0 });
-
+    sensorChart.data.datasets[0].data.push({ x: tempoAtual, y: parseFloat(estacao.temperatura) || 0 });
+    sensorChart.data.datasets[1].data.push({ x: tempoAtual, y: parseFloat(estacao.umidade) || 0 });
+    sensorChart.data.datasets[2].data.push({ x: tempoAtual, y: parseFloat(estacao.pluviometria) || 0 });
+    sensorChart.data.datasets[3].data.push({ x: tempoAtual, y: parseFloat(estacao.nivelRio) || 0 });
+    
     // Remove pontos antigos (mantém os últimos 20)
     sensorChart.data.datasets.forEach(dataset => {
         if (dataset.data.length > 20) dataset.data.shift();
