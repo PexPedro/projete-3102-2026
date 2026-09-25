@@ -48,7 +48,7 @@ app.post('/api/login', (req, res) => {
 app.get('/api/dashboard', verificarAutenticacao, (req, res) => {
 
     const dadosParaEnviar = JSON.parse(JSON.stringify(estado.sensores));
-
+    
     // Se houver itens na fila da Estação 1, entrega o próximo da fila
     if (filaMensagens[1] && filaMensagens[1].length > 0) {
         const proximaLeitura = filaMensagens[1].shift(); // Pega a primeira da fila
