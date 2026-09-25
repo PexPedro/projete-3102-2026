@@ -54,10 +54,10 @@ app.get('/api/dashboard', verificarAutenticacao, (req, res) => {
         const proximaLeitura = filaMensagens[1].shift(); // Pega a primeira da fila
         dadosParaEnviar[1] = {
             ...dadosParaEnviar[1],
-            pluviometria: proximaLeitura.pluv,
-            nivelRio: proximaLeitura.rio,
-            umidade: proximaLeitura.umid,
-            temperatura: proximaLeitura.temp,
+            pluviometria: proximaLeitura.ChuvaAlerta,
+            nivelRio: proximaLeitura.RioAlerta,
+            umidade: proximaLeitura.UmidAlerta,
+            temperatura: proximaLeitura.TempAlerta,
             novoDado: true
         };
     } else {
