@@ -1,3 +1,4 @@
+
 let sensorChart;
 
 export function iniciarGrafico() {
@@ -50,6 +51,16 @@ export function iniciarGrafico() {
     });
 }
 
+async function Alert() {
+    await Swal.fire({
+        title: 'Aviso',
+        text: 'Um dos sensores atingiu um valor crítico!',
+        icon: 'warning',
+        confirmButtonText: 'OK'
+    });
+}
+
+
 export function atualizarGraficos(sensores, tempoAtual) {
     if (!sensorChart || !sensores || !sensores[1]) return;
 
@@ -67,19 +78,19 @@ export function atualizarGraficos(sensores, tempoAtual) {
     sensorChart.update();
 
     if (String(estacao.temperatura).includes(':A')) {
-        alert('Aviso na Temperatura');
+        Alert();
     }
 
     if (String(estacao.umidade).includes(':A')) {
-        alert('Aviso na Umidade');
+        Alert();
     }
 
     if (String(estacao.pluviometria).includes(':A')) {
-        alert('Aviso na Pluviometria');
+        Alert();
     }
 
     if (String(estacao.nivelRio).includes(':A')) {
-        alert('Aviso no Nível do Rio');
+        Alert();
     }
 }
 

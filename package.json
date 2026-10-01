@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "node": "^26.8.1"
+    "node": "^26.8.1",
+    "sweetalert2": "^11.26.25"
   }
 }
